@@ -1,0 +1,6 @@
+.idea
+target
+q*.qpml
+q*.txt
+results*
+timings*
