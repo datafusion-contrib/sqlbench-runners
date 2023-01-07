@@ -17,7 +17,7 @@ def bench(data_path, query_path, num_queries):
             con.execute(create_view_sql)
 
         end = time.time()
-        results.write("setup,{}".format((end-start)*1000))
+        results.write("setup,{}\n".format((end-start)*1000))
 
         for query in range(1, num_queries):
             with open("{}/q{}.sql".format(query_path, query)) as f:
@@ -28,7 +28,13 @@ def bench(data_path, query_path, num_queries):
                 end = time.time()
                 time_millis = (end - start) * 1000
                 print("q{},{}".format(query, time_millis))
-                results.write("q{},{}".format(query, time_millis))
+                results.write("q{},{}\n".format(query, time_millis))
 
 if __name__ == "__main__":
-    bench("/mnt/bigdata/tpch/sf10-parquet", "../../sqlbench-h/queries/sf=10", 22)
+    if __name__ == "__main__":
+        parser = argparse.ArgumentParser()
+        parser.add_argument('data_path')
+        parser.add_argument('query_path')
+        parser.add_argument('num_queries')
+        args = parser.parse_args()
+        bench(args.data_path, args.query_path, int(args.num_queries))

@@ -37,6 +37,10 @@ struct Opt {
     #[structopt(short, long)]
     query: Option<u8>,
 
+    /// Number of queries in this benchmark suite
+    #[structopt(short, long)]
+    num_queries: Option<u8>,
+
     /// Concurrency
     #[structopt(short, long)]
     concurrency: u8,
@@ -131,7 +135,7 @@ pub async fn main() -> Result<()> {
             .await?;
         }
         _ => {
-            for query in 1..=22 {
+            for query in 1..=opt.num_queries.unwrap() {
                 let result = execute_query(
                     &ctx,
                     &query_path,

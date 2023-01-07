@@ -26,5 +26,6 @@ cargo build --release
   --data-path /mnt/bigdata/tpch/sf10-parquet/ \
   --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
   --iterations 1 \
-  --output /tmp
+  --output /tmp \
+  --num-queries 22
 ```

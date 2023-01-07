@@ -47,7 +47,8 @@ $SPARK_HOME/bin/spark-submit --master spark://ripper:7077 \
     --conf spark.executor.cores=24 \
     target/sqlbench-spark-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
     --input-path /mnt/bigdata/tpch/sf10-parquet/ \
-    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/
+    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
+    --num-queries 22
 ```
 
 Monitor progress via the Spark UI at http://localhost:8080
