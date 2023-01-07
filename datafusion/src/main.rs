@@ -1,4 +1,4 @@
-use datafusion::common::{DataFusionError, Result};
+use datafusion::common::Result;
 use datafusion::datasource::MemTable;
 use datafusion::prelude::{ParquetReadOptions, SessionConfig, SessionContext};
 use datafusion::DATAFUSION_VERSION;
@@ -14,10 +14,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use structopt::StructOpt;
 use tokio::time::Instant;
 
-const TABLES: &[&str] = &[
-    "customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier",
-];
-
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
 struct Opt {
@@ -25,11 +21,11 @@ struct Opt {
     #[structopt(long)]
     debug: bool,
 
-    /// Path to TPC-H queries
+    /// Path to queries
     #[structopt(long, parse(from_os_str))]
     query_path: PathBuf,
 
-    /// Path to TPC-H data set
+    /// Path to data
     #[structopt(short, long, parse(from_os_str))]
     data_path: PathBuf,
 
@@ -94,31 +90,29 @@ pub async fn main() -> Result<()> {
     results.datafusion_github_sha = opt.rev;
 
     let query_path = format!("{}", opt.query_path.display());
-    let data_path = format!("{}", opt.data_path.display());
     let output_path = format!("{}", opt.output.display());
 
     let config = SessionConfig::from_env().with_target_partitions(opt.concurrency as usize);
-
     for (k, v) in config.config_options.read().options() {
         results.config.insert(k.to_string(), v.to_string());
     }
 
-    let ctx = SessionContext::with_config(config);
-
-    // register tables
+    // register all tables in data directory
     let start = Instant::now();
-    for table in TABLES {
-        let path = format!("{}/{}.parquet", &data_path, table);
-        if Path::new(&path).exists() {
-            ctx.register_parquet(table, &path, ParquetReadOptions::default())
+    let ctx = SessionContext::with_config(config);
+    for file in fs::read_dir(&opt.data_path)? {
+        let file = file?;
+        let file_path = file.path();
+        let path = format!("{}", file.path().display());
+        if path.ends_with(".parquet") {
+            let filename = Path::file_name(&file_path).unwrap().to_str().unwrap();
+            let table_name = &filename[0..filename.len() - 8];
+            println!("Registering table {} as {}", table_name, path);
+            ctx.register_parquet(&table_name, &path, ParquetReadOptions::default())
                 .await?;
-        } else {
-            return Err(DataFusionError::Execution(format!(
-                "Path does not exist: {}",
-                path
-            )));
         }
     }
+
     let setup_time = start.elapsed().as_millis();
     println!("Setup time was {} ms", setup_time);
     results.register_tables_time = setup_time;
@@ -158,7 +152,10 @@ pub async fn main() -> Result<()> {
 
     // write results json file
     let json = serde_json::to_string_pretty(&results).unwrap();
-    let f = File::create(&format!("{}/results-{}.yaml", output_path, results.system_time))?;
+    let f = File::create(&format!(
+        "{}/results-{}.yaml",
+        output_path, results.system_time
+    ))?;
     let mut w = BufWriter::new(f);
     w.write(json.as_bytes())?;
 
@@ -224,7 +221,10 @@ pub async fn execute_query(
 
                 // write QPML
                 let qpml = from_datafusion(&plan);
-                let filename = format!("{}/q{}{}_logical_plan.qpml", output_path, query_no, file_suffix);
+                let filename = format!(
+                    "{}/q{}{}_logical_plan.qpml",
+                    output_path, query_no, file_suffix
+                );
                 let file = File::create(&filename)?;
                 let mut file = BufWriter::new(file);
                 serde_yaml::to_writer(&mut file, &qpml).unwrap();

@@ -721,7 +721,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "datafusion-sqlbench-h"
+name = "datafusion-sqlbench"
 version = "0.1.0"
 dependencies = [
  "datafusion",

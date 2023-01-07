@@ -1,4 +1,4 @@
-# SQLBench-H: DataFusion Runner
+# SQLBench DataFusion Runner
 
 ## Build
 
@@ -9,22 +9,22 @@ cargo build --release
 ## Run Single Query
 
 ```bash
-./target/release/datafusion-sqlbench-h \
+./target/release/datafusion-sqlbench \
   --concurrency 24 \
   --data-path /mnt/bigdata/tpch/sf10-parquet/ \
-  --query-path ../../queries/sf\=10/ \
+  --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
   --iterations 1 \
-  --output . \
+  --output /tmp
   --query 1
 ```
 
 ## Run All Queries
 
 ```bash
-./target/release/datafusion-sqlbench-h \
+./target/release/datafusion-sqlbench \
   --concurrency 24 \
   --data-path /mnt/bigdata/tpch/sf10-parquet/ \
-  --query-path ../../queries/sf\=10/ \
+  --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
   --iterations 1 \
-  --output .
+  --output /tmp
 ```
