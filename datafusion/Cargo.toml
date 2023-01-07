@@ -1,0 +1,15 @@
+[package]
+name = "datafusion-sqlbench-h"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.62"
+publish = false
+
+[dependencies]
+datafusion = "15.0"
+qpml = "0.8.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.91"
+serde_yaml = "0.9.16"
+structopt = "0.3.26"
+tokio = { version = "^1.0", features = ["rt-multi-thread"] }
