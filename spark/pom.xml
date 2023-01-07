@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.sqlbenchmarks</groupId>
-    <artifactId>sqlbench-h</artifactId>
+    <artifactId>sqlbench-spark</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>SQLBench-H Benchmarks for Apache Spark</name>
+    <name>SQLBench Runner for Apache Spark</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -1,10 +1,11 @@
-package io.sqlbenchmarks.sqlbenchh
+package io.sqlbenchmarks.sqlbench
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.internal.SQLConf
 import org.rogach.scallop.ScallopConf
 
 import java.io.{BufferedWriter, File, FileWriter}
+import java.nio.file.{Files, FileSystems}
+import scala.collection.JavaConverters.asScalaIteratorConverter
 import scala.io.Source
 
 class Conf(args: Array[String]) extends ScallopConf(args) {
@@ -17,26 +18,26 @@ class Conf(args: Array[String]) extends ScallopConf(args) {
 
 object Main {
 
-  val tables = Seq(
-    "customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier"
-  )
-
   def main(args: Array[String]): Unit = {
     val conf = new Conf(args)
 
-    val w = new BufferedWriter(new FileWriter(new File("results.csv")))
+    val w = new BufferedWriter(new FileWriter(new File(s"results-${System.currentTimeMillis()}.csv")))
 
     val spark: SparkSession = SparkSession.builder
-      .appName("SQLBench-H Benchmarks")
+      .appName("SQLBench Benchmarks")
       .getOrCreate()
 
     // register tables
     val start = System.currentTimeMillis()
-    for (table <- tables) {
-      val path = s"${conf.inputPath()}/${table}.parquet"
-      println(s"Registering table $table at $path")
-      val df = spark.read.parquet(path)
-      df.createTempView(table)
+    val dir = FileSystems.getDefault.getPath(conf.inputPath())
+    Files.list(dir).iterator().asScala.foreach { path =>
+      val filename = path.getFileName.toString
+      if (filename.endsWith(".parquet")) {
+        val table = filename.substring(0, filename.length - 8)
+        println(s"Registering table $table at $path")
+        val df = spark.read.parquet(path.toString)
+        df.createTempView(table)
+      }
     }
     val duration = System.currentTimeMillis() - start
     w.write(s"Register Tables,$duration\n")
