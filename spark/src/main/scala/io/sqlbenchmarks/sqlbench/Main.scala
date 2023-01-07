@@ -11,7 +11,8 @@ import scala.io.Source
 class Conf(args: Array[String]) extends ScallopConf(args) {
   val inputPath = opt[String](required = true)
   val queryPath = opt[String](required = true)
-  val query = opt[String](required = false)
+  val query = opt[Int](required = false)
+  val numQueries = opt[Int](required = false)
   val keepAlive = opt[Boolean](required = false)
   verify()
 }
@@ -44,9 +45,9 @@ object Main {
     w.flush()
 
     if (conf.query.isSupplied) {
-      execute(spark, conf.queryPath(), conf.query().toInt, w)
+      execute(spark, conf.queryPath(), conf.query(), w)
     } else {
-      for (query <- 1 to 22) {
+      for (query <- 1 to conf.numQueries()) {
           try {
             execute(spark, conf.queryPath(), query, w)
           } catch {
