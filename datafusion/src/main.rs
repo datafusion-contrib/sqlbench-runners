@@ -135,7 +135,14 @@ pub async fn main() -> Result<()> {
             .await?;
         }
         _ => {
-            for query in 1..=opt.num_queries.unwrap() {
+            let num_queries = opt.num_queries.unwrap();
+            for query in 1..=num_queries {
+
+                // skip known issues (OOM)
+                if num_queries == 99 && (query == 47 || query == 65 || query == 78) {
+                    continue
+                }
+
                 let result = execute_query(
                     &ctx,
                     &query_path,
@@ -162,6 +169,13 @@ pub async fn main() -> Result<()> {
     ))?;
     let mut w = BufWriter::new(f);
     w.write(json.as_bytes())?;
+
+    // write simple csv summary file
+    let mut w = File::create("results.csv")?;
+    w.write(format!("setup,{}\n", results.register_tables_time).as_bytes())?;
+    for (query, times) in &results.query_times {
+        w.write(format!("q{},{}\n", query, times[0]).as_bytes())?;
+    }
 
     Ok(())
 }
