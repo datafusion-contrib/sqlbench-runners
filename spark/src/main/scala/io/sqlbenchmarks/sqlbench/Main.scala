@@ -76,22 +76,22 @@ object Main {
     source.close()
 
     val queries = sql.split(';').filterNot(_.trim.isEmpty)
+    var total_duration: Long = 0
 
     for ((sql, i) <- queries.zipWithIndex) {
       println(sql)
 
       val start = System.currentTimeMillis()
-      val resultDf = spark.sql(sql)
+      val resultDf = spark.sql(sql.replace("create view", "create temp view"))
       val results = resultDf.collect()
       val duration = System.currentTimeMillis() - start
+      total_duration += duration
       println(s"Query $query took $duration ms")
 
       var prefix = s"q$query"
       if (queries.length > 1) {
         prefix += "_part_"+ (i+1)
       }
-      w.write(s"$prefix,$duration\n")
-      w.flush()
 
       val optimizedLogicalPlan = resultDf.queryExecution.optimizedPlan
       writeFile(prefix, "logical_plan.txt", optimizedLogicalPlan.toString())
@@ -110,6 +110,9 @@ object Main {
       // could also save directly from dataframe but this would execute the query again
       //resultDf.coalesce(1).write.csv(csvFilename)
     }
+
+    w.write(s"q$query,$total_duration\n")
+    w.flush()
   }
 
   def writeFile(prefix: String, suffix: String, text: String): Unit = {
