@@ -21,7 +21,7 @@ def bench(data_path, query_path, num_queries):
         results.write("setup,{}\n".format((end-start)*1000))
         results.flush()
 
-        for query in range(1, num_queries):
+        for query in range(1, num_queries+1):
 
             # some DS queries segfault (as of duckdb-0.6.0)
             if num_queries == 99 and query in [5, 6, 19, 54, 64]:
