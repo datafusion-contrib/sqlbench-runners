@@ -2,6 +2,7 @@ use datafusion::common::Result;
 use datafusion::datasource::MemTable;
 use datafusion::prelude::{ParquetReadOptions, SessionConfig, SessionContext};
 use datafusion::DATAFUSION_VERSION;
+#[cfg(feature = "qpml")]
 use qpml::from_datafusion;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -238,14 +239,17 @@ pub async fn execute_query(
                 write!(file, "{}", formatted_query_plan)?;
 
                 // write QPML
-                let qpml = from_datafusion(&plan);
-                let filename = format!(
-                    "{}/q{}{}_logical_plan.qpml",
-                    output_path, query_no, file_suffix
-                );
-                let file = File::create(&filename)?;
-                let mut file = BufWriter::new(file);
-                serde_yaml::to_writer(&mut file, &qpml).unwrap();
+                #[cfg(feature = "qpml")]
+                {
+                    let qpml = from_datafusion(&plan);
+                    let filename = format!(
+                        "{}/q{}{}_logical_plan.qpml",
+                        output_path, query_no, file_suffix
+                    );
+                    let file = File::create(&filename)?;
+                    let mut file = BufWriter::new(file);
+                    serde_yaml::to_writer(&mut file, &qpml).unwrap();
+                }
 
                 // write results to disk
                 if batches.is_empty() {

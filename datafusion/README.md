@@ -9,7 +9,7 @@ cargo build --release
 ## Run Single Query
 
 ```bash
-./target/release/datafusion-sqlbench \
+./target/release/sqlbench-datafusion \
   --concurrency 24 \
   --data-path /mnt/bigdata/tpch/sf10-parquet/ \
   --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
@@ -21,7 +21,7 @@ cargo build --release
 ## Run All Queries
 
 ```bash
-./target/release/datafusion-sqlbench \
+./target/release/sqlbench-datafusion \
   --concurrency 24 \
   --data-path /mnt/bigdata/tpch/sf10-parquet/ \
   --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \

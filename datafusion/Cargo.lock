@@ -721,19 +721,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "datafusion-sqlbench"
-version = "0.1.0"
-dependencies = [
- "datafusion",
- "qpml",
- "serde",
- "serde_json",
- "serde_yaml",
- "structopt",
- "tokio",
-]
-
-[[package]]
 name = "difference"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1736,6 +1723,19 @@ checksum = "02e2d2db9033d13a1567121ddd7a095ee144db4e1ca1b1bda3419bc0da294ebd"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "sqlbench-datafusion"
+version = "0.1.0"
+dependencies = [
+ "datafusion",
+ "qpml",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "structopt",
+ "tokio",
 ]
 
 [[package]]
