@@ -41,7 +41,7 @@ object Main {
       }
     }
     val duration = System.currentTimeMillis() - start
-    w.write(s"Register Tables,$duration\n")
+    w.write(s"setup,$duration\n")
     w.flush()
 
     if (conf.query.isSupplied) {
