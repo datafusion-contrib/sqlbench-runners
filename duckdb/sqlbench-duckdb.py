@@ -18,7 +18,7 @@ def bench(data_path, query_path, num_queries):
             con.execute(create_view_sql)
 
         end = time.time()
-        results.write("setup,{}\n".format((end-start)*1000))
+        results.write("setup,{}\n".format(round((end-start)*1000,1)))
         results.flush()
 
         for query in range(1, num_queries+1):
@@ -39,7 +39,7 @@ def bench(data_path, query_path, num_queries):
                     end = time.time()
                     time_millis = (end - start) * 1000
                     print("q{},{}".format(query, time_millis))
-                    results.write("q{},{}\n".format(query, time_millis))
+                    results.write("q{},{}\n".format(query, round(time_millis, 1)))
                     results.flush()
 
                     with open("q{}_logical_plan.txt".format(query), 'w') as f:
