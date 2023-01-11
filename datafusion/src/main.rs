@@ -97,9 +97,9 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let config = SessionConfig::from_env().with_target_partitions(opt.concurrency as usize);
-    for (k, v) in config.config_options.read().options() {
-        results.config.insert(k.to_string(), v.to_string());
+    let config = SessionConfig::from_env()?.with_target_partitions(opt.concurrency as usize);
+    for entry in config.config_options().entries() {
+        results.config.insert(entry.key, entry.value.unwrap());
     }
 
     // register all tables in data directory
@@ -220,7 +220,7 @@ pub async fn execute_query(
 
             let start = Instant::now();
             let df = ctx.sql(sql).await?;
-            let batches = df.collect().await?;
+            let batches = df.clone().collect().await?;
             let duration = start.elapsed();
             total_duration_millis += duration.as_millis();
             println!(
@@ -229,7 +229,7 @@ pub async fn execute_query(
             );
 
             if iteration == 0 {
-                let plan = df.to_logical_plan()?;
+                let plan = df.logical_plan();
                 let formatted_query_plan = format!("{}", plan.display_indent());
                 let filename = format!(
                     "{}/q{}{}_logical_plan.txt",

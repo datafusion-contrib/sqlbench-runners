@@ -6,13 +6,14 @@ rust-version = "1.62"
 publish = false
 
 [dependencies]
-datafusion = "15.0"
+datafusion = { git = "https://github.com/apache/arrow-datafusion" }
 qpml = { version = "0.8.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.91"
 serde_yaml = "0.9.16"
 structopt = "0.3.26"
 tokio = { version = "^1.0", features = ["rt-multi-thread"] }
+indexmap = "1.9.2"
 
 [features]
 default = [ "qpml" ]
