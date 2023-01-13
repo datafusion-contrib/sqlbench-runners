@@ -11,8 +11,8 @@ def bench(data_path, query_path, num_queries):
     batch_size = 32768
 
     with open("configs.csv", 'w') as configs:
-        configs.write("shuffle_partitions={}".format(shuffle_partitions))
-        configs.write("batch_size={}".format(batch_size))
+        configs.write("shuffle_partitions={}\n".format(shuffle_partitions))
+        configs.write("batch_size={}\n".format(batch_size))
 
     with open("results.csv", 'w') as results:
         # register tables
