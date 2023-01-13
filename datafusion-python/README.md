@@ -1,4 +1,4 @@
-# SQLBench Runner for Dask SQL
+# SQLBench Runner for DataFusion Python
 
 Example usage:
 

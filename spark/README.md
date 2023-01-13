@@ -33,8 +33,8 @@ $SPARK_HOME/bin/spark-submit --master spark://ripper:7077 \
     --conf spark.executor.cores=24 \
     --conf spark.cores.max=24
     target/sqlbench-spark-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-    --input-path /mnt/bigdata/tpch/sf10-parquet/ \
-    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
+    --input-path /mnt/bigdata/tpch/sf100-parquet/ \
+    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=100/ \
     --query 1
 ```
 
@@ -48,8 +48,8 @@ $SPARK_HOME/bin/spark-submit --master spark://ripper:7077 \
     --conf spark.executor.cores=24 \
     --conf spark.cores.max=24 \
     target/sqlbench-spark-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-    --input-path /mnt/bigdata/tpch/sf10-parquet/ \
-    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
+    --input-path /mnt/bigdata/tpch/sf100-parquet/ \
+    --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=100/ \
     --num-queries 22
 ```
 

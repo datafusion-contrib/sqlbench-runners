@@ -1,5 +1,5 @@
 import argparse
-from ballista import SessionContext
+from ballista import BallistaContext
 import os
 import time
 import glob
@@ -9,7 +9,7 @@ def bench(data_path, query_path, num_queries):
     with open("results.csv", 'w') as results:
         # register tables
         start = time.time()
-        c = SessionContext()
+        c = BallistaContext("localhost", 50050, 200, 24)
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
@@ -18,13 +18,15 @@ def bench(data_path, query_path, num_queries):
             c.sql(create_view_sql)
         end = time.time()
         print("Register Tables took {} seconds".format(end-start))
-        results.write("setup,{}\n".format((end-start)*1000))
+        results.write("setup,{}\n".format(round((end-start)*1000, 1)))
+        results.flush()
 
         # run queries
-        for query in range(1, num_queries):
+        for query in range(1, num_queries+1):
             with open("{}/q{}.sql".format(query_path, query)) as f:
                 sql = f.read()
                 print(sql)
+
                 try:
                     start = time.time()
                     df = c.sql(sql)
@@ -33,6 +35,12 @@ def bench(data_path, query_path, num_queries):
                     time_millis = (end - start) * 1000
                     print("q{},{}".format(query, time_millis))
                     results.write("q{},{}\n".format(query, time_millis))
+                    results.flush()
+
+                    explain = df.explain_string()
+                    with open("q{}_logical_plan.txt".format(query), "w") as exp:
+                        exp.write(explain)
+
                 except Exception as e:
                     print("query", query, "failed", e)
 
