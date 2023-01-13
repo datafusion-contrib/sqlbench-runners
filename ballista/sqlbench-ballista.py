@@ -6,10 +6,18 @@ import glob
 
 def bench(data_path, query_path, num_queries):
 
+    # defaults: shuffle_partitions = 16, batch_size = 8192
+    shuffle_partitions = 48
+    batch_size = 32768
+
+    with open("configs.csv", 'w') as configs:
+        configs.write("shuffle_partitions={}\n".format(shuffle_partitions))
+        configs.write("batch_size={}\n".format(batch_size))
+
     with open("results.csv", 'w') as results:
         # register tables
         start = time.time()
-        c = BallistaContext("localhost", 50050, 200, 24)
+        c = BallistaContext("localhost", 50050, shuffle_partitions, batch_size)
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
