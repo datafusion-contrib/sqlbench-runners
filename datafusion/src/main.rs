@@ -8,10 +8,11 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufRead, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use datafusion::scalar::ScalarValue;
 use structopt::StructOpt;
 use tokio::time::Instant;
 
@@ -21,6 +22,10 @@ struct Opt {
     /// Activate debug mode
     #[structopt(long)]
     debug: bool,
+
+    /// Optional path to config file
+    #[structopt(short, long, parse(from_os_str))]
+    config_path: Option<PathBuf>,
 
     /// Path to queries
     #[structopt(long, parse(from_os_str))]
@@ -41,6 +46,10 @@ struct Opt {
     /// Number of queries in this benchmark suite
     #[structopt(short, long)]
     num_queries: Option<u8>,
+
+    /// List of queries to exclude
+    #[structopt(short, long)]
+    exclude: Vec<u8>,
 
     /// Concurrency
     #[structopt(short, long)]
@@ -98,6 +107,26 @@ pub async fn main() -> Result<()> {
     let output_path = format!("{}", opt.output.display());
 
     let config = SessionConfig::from_env().with_target_partitions(opt.concurrency as usize);
+
+    if let Some(config_path) = &opt.config_path {
+        let file = File::open(config_path)?;
+        let reader = BufReader::new(file);
+        let lines = reader.lines();
+        for line in lines {
+            let line = line?;
+            if line.starts_with("#") {
+                continue;
+            }
+            let parts = line.split('=');
+            let parts = parts.collect::<Vec<&str>>();
+            if parts.len() == 2 {
+                config.config_options.write().set(parts[0], ScalarValue::Utf8(Some(parts[1].to_string())));
+            } else {
+                println!("Warning! Skipping config entry {}", line);
+            }
+        }
+    }
+
     for (k, v) in config.config_options.read().options() {
         results.config.insert(k.to_string(), v.to_string());
     }
@@ -139,8 +168,8 @@ pub async fn main() -> Result<()> {
             let num_queries = opt.num_queries.unwrap();
             for query in 1..=num_queries {
 
-                // skip known issues (OOM)
-                if num_queries == 99 && (query == 47 || query == 65 || query == 78) {
+                if opt.exclude.contains(&query) {
+                    println!("Skipping query {}", query);
                     continue
                 }
 
@@ -172,7 +201,7 @@ pub async fn main() -> Result<()> {
     w.write(json.as_bytes())?;
 
     // write simple csv summary file
-    let mut w = File::create("results.csv")?;
+    let mut w = File::create(&format!("{}/results.csv", output_path))?;
     w.write(format!("setup,{}\n", results.register_tables_time).as_bytes())?;
     for (query, times) in &results.query_times {
         w.write(format!("q{},{}\n", query, times[0]).as_bytes())?;
