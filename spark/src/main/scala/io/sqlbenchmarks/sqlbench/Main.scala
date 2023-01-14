@@ -11,6 +11,7 @@ import scala.io.Source
 class Conf(args: Array[String]) extends ScallopConf(args) {
   val inputPath = opt[String](required = true)
   val queryPath = opt[String](required = true)
+  val outputPath = opt[String](required = true)
   val query = opt[Int](required = false)
   val numQueries = opt[Int](required = false)
   val keepAlive = opt[Boolean](required = false)
@@ -22,7 +23,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val conf = new Conf(args)
 
-    val w = new BufferedWriter(new FileWriter(new File(s"results-${System.currentTimeMillis()}.csv")))
+    val w = new BufferedWriter(new FileWriter(new File(s"${conf.outputPath()}/results-${System.currentTimeMillis()}.csv")))
 
     val spark: SparkSession = SparkSession.builder
       .appName("SQLBench Benchmarks")
@@ -45,11 +46,11 @@ object Main {
     w.flush()
 
     if (conf.query.isSupplied) {
-      execute(spark, conf.queryPath(), conf.query(), w)
+      execute(spark, conf.queryPath(), conf.query(), w, conf.outputPath())
     } else {
       for (query <- 1 to conf.numQueries()) {
           try {
-            execute(spark, conf.queryPath(), query, w)
+            execute(spark, conf.queryPath(), query, w, conf.outputPath())
           } catch {
             case e: Exception =>
               // don't stop on errors
@@ -67,7 +68,7 @@ object Main {
     }
   }
 
-  private def execute(spark: SparkSession, path: String, query: Int, w: BufferedWriter) {
+  private def execute(spark: SparkSession, path: String, query: Int, w: BufferedWriter, outputPath: String) {
     val sqlFile = s"$path/q$query.sql"
     println(s"Executing query $query from $sqlFile")
 
@@ -88,7 +89,7 @@ object Main {
       total_duration += duration
       println(s"Query $query took $duration ms")
 
-      var prefix = s"q$query"
+      var prefix = s"$outputPath/q$query"
       if (queries.length > 1) {
         prefix += "_part_"+ (i+1)
       }
@@ -99,7 +100,7 @@ object Main {
       val physicalPlan = resultDf.queryExecution.executedPlan
       writeFile(prefix, "physical_plan.txt", physicalPlan.toString())
 
-      val csvFilename = s"$prefix.csv"
+      val csvFilename = s"$outputPath/$prefix.csv"
 
       // write results to CSV format
       val resultWriter = new BufferedWriter(new FileWriter(csvFilename))
