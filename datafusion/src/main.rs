@@ -106,7 +106,7 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let config = SessionConfig::from_env().with_target_partitions(opt.concurrency as usize);
+    let mut config = SessionConfig::from_env()?.with_target_partitions(opt.concurrency as usize);
 
     if let Some(config_path) = &opt.config_path {
         let file = File::open(config_path)?;
@@ -120,15 +120,15 @@ pub async fn main() -> Result<()> {
             let parts = line.split('=');
             let parts = parts.collect::<Vec<&str>>();
             if parts.len() == 2 {
-                config.config_options.write().set(parts[0], ScalarValue::Utf8(Some(parts[1].to_string())));
+                config = config.set(parts[0], ScalarValue::Utf8(Some(parts[1].to_string())));
             } else {
                 println!("Warning! Skipping config entry {}", line);
             }
         }
     }
 
-    for (k, v) in config.config_options.read().options() {
-        results.config.insert(k.to_string(), v.to_string());
+    for entry in config.config_options().entries() {
+        results.config.insert(entry.key, entry.value.unwrap().to_string());
     }
 
     // register all tables in data directory
@@ -249,7 +249,7 @@ pub async fn execute_query(
 
             let start = Instant::now();
             let df = ctx.sql(sql).await?;
-            let batches = df.collect().await?;
+            let batches = df.clone().collect().await?;
             let duration = start.elapsed();
             total_duration_millis += duration.as_millis();
             println!(
@@ -258,7 +258,7 @@ pub async fn execute_query(
             );
 
             if iteration == 0 {
-                let plan = df.to_logical_plan()?;
+                let plan = df.logical_plan();
                 let formatted_query_plan = format!("{}", plan.display_indent());
                 let filename = format!(
                     "{}/q{}{}_logical_plan.txt",
