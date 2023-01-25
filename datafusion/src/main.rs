@@ -106,7 +106,7 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let mut config = SessionConfig::from_env()?.with_target_partitions(opt.concurrency as usize);
+    let mut config = SessionConfig::new().with_target_partitions(opt.concurrency as usize);
 
     if let Some(config_path) = &opt.config_path {
         let file = File::open(config_path)?;
@@ -128,7 +128,9 @@ pub async fn main() -> Result<()> {
     }
 
     for entry in config.config_options().entries() {
-        results.config.insert(entry.key, entry.value.unwrap().to_string());
+        if let Some(ref value) = entry.value {
+            results.config.insert(entry.key, value.to_string());
+        }
     }
 
     // register all tables in data directory
