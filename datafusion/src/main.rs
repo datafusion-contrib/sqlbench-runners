@@ -260,7 +260,7 @@ pub async fn execute_query(
             );
 
             if iteration == 0 {
-                let plan = df.logical_plan();
+                let plan = df.into_optimized_plan()?;
                 let formatted_query_plan = format!("{}", plan.display_indent());
                 let filename = format!(
                     "{}/q{}{}_logical_plan.txt",
