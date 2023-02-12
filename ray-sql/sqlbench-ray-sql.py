@@ -15,7 +15,7 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
     workers = [Worker.remote() for i in range(24)]
 
     # create context
-    ctx = RaySqlContext(workers)
+    ctx = RaySqlContext.remote(workers)
 
     with open("{}/results.csv".format(output_path), 'w') as results:
         # register tables
@@ -23,7 +23,7 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
-            ctx.register_parquet(table_name, file)
+            ray.get(ctx.register_parquet.remote(table_name, file))
 
         end = time.time()
         print("Register Tables took {} seconds".format(end-start))
@@ -40,9 +40,8 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
                     start = time.time()
                     for i in range(iterations):
                         print("iteration", i+1, "of", iterations, "...")
-                        df = ctx.sql(sql)
-
-                        # TODO collect
+                        result_set = ray.get(ctx.sql.remote(sql))
+                        print("final results", result_set)
 
                     end = time.time()
 

@@ -30,7 +30,7 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
         results.flush()
 
         # run queries
-        for query in range(2, 3):
+        for query in range(1, 23):
             with open("{}/q{}.sql".format(query_path, query)) as f:
                 sql = f.read()
                 print(sql)
