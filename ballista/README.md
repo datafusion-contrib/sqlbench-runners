@@ -1,7 +1,33 @@
-# SQLBench Runner for Ballista
+# SQLBench Ballista Runner
 
-Example usage:
+## Build
 
 ```bash
-python sqlbench-ballista.py /mnt/bigdata/tpch/sf10-parquet/ ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10 22
+cargo build --release
+```
+
+## Run Single Query
+
+```bash
+./target/release/sqlbench-ballista \
+  --concurrency 24 \
+  --config-path ./default-configs.properties \
+  --data-path /mnt/bigdata/tpch/sf10-parquet/ \
+  --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
+  --iterations 1 \
+  --output . \
+  --query 16
+```
+
+## Run All Queries
+
+```bash
+./target/release/sqlbench-ballista \
+  --concurrency 24 \
+  --config-path ./default-configs.properties \
+  --data-path /mnt/bigdata/tpch/sf10-parquet/ \
+  --query-path ~/git/sql-benchmarks/sqlbench-h/queries/sf\=10/ \
+  --iterations 3 \
+  --output . \
+  --num-queries 22
 ```
