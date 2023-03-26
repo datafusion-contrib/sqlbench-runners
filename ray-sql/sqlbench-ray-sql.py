@@ -1,7 +1,6 @@
 import argparse
 import ray
-from raysql.context import RaySqlContext
-from raysql.worker import Worker
+from raysql.context import RaySqlContext, ResultSet
 import os
 import time
 import glob
@@ -9,13 +8,10 @@ import glob
 def bench(data_path, query_path, output_path, num_queries, iterations):
 
     # start a cluster
-    ray.init()
-
-    # create some remote Workers
-    workers = [Worker.remote() for i in range(24)]
+    ray.init(resources={"worker": 1})
 
     # create context
-    ctx = RaySqlContext.remote(workers)
+    ctx = RaySqlContext(24, use_ray_shuffle=True)
 
     with open("{}/results.csv".format(output_path), 'w') as results:
         # register tables
@@ -23,7 +19,7 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
-            ray.get(ctx.register_parquet.remote(table_name, file))
+            ctx.register_parquet(table_name, file)
 
         end = time.time()
         print("Register Tables took {} seconds".format(end-start))
@@ -33,20 +29,36 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
         # run queries
         for query in range(1, num_queries+1):
             with open("{}/q{}.sql".format(query_path, query)) as f:
-                sql = f.read()
-                print(sql)
+                text = f.read()
+                tmp = text.split(';')
+                queries = []
+                for str in tmp:
+                    if len(str.strip()) > 0:
+                        queries.append(str)
 
                 try:
                     start = time.time()
                     for i in range(iterations):
                         print("iteration", i+1, "of", iterations, "...")
-                        result_set = ray.get(ctx.sql.remote(sql))
-                        print("final results", result_set)
+                        for sql in queries:
+                            print(sql)
+                            x = ctx.sql(sql)
+
+                            # TODO this is very hacky and is a workaround for
+                            # not trying to print empty result sets from DDL
+                            # statements, which currently errors
+                            if not ('create view' in sql or 'drop view' in sql):
+                                result_set = x
+
+                        print("final results", ResultSet(result_set))
 
                     end = time.time()
 
                     time_millis = ((end - start) * 1000) / iterations
-                    print("q{},{}".format(query, time_millis))
+                    if len(queries) == 2:
+                        print("q{},{}".format(query, time_millis))
+                    else:
+                        print("q{}_{},{}".format(query, i, time_millis))
                     results.write("q{},{}\n".format(query, time_millis))
                     results.flush()
 
