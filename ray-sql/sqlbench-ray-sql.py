@@ -1,7 +1,8 @@
 import argparse
 import ray
-from raysql.context import RaySqlContext, ResultSet
+from raysql.context import RaySqlContext
 import os
+import pandas
 import time
 import glob
 
@@ -48,9 +49,14 @@ def bench(data_path, query_path, output_path, num_queries, iterations):
                             # not trying to print empty result sets from DDL
                             # statements, which currently errors
                             if not ('create view' in sql or 'drop view' in sql):
-                                result_set = x
+                                result = x
 
-                        print("final results", ResultSet(result_set))
+                        print("Result:", result)
+                        if isinstance(result, list):
+                            for r in result:
+                                print(r.to_pandas())
+                        else:
+                            print(result.to_pandas())
 
                     end = time.time()
 
