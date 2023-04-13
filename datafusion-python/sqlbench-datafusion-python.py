@@ -1,5 +1,5 @@
 import argparse
-from datafusion import SessionContext
+from datafusion import SessionContext, RuntimeConfig, SessionConfig
 import os
 import time
 import glob
@@ -10,18 +10,22 @@ def bench(data_path, query_path, num_queries):
         # register tables
         start = time.time()
 
-        runtime = RuntimeConfig() #.with_disk_manager_os().with_fair_spill_pool(10000000)
-        config = {
-            'datafusion.execution.parquet.pushdown_filters': 'true'
-        }
-        ctx = SessionContext(SessionConfig(config), runtime)
+        # test with explicit configs
+        # runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
+        # config = {
+        #     'datafusion.execution.parquet.pushdown_filters': 'true'
+        # }
+        # ctx = SessionContext(SessionConfig(config), runtime)
+
+        # test with default session
+        ctx = SessionContext()
 
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
             create_view_sql = "CREATE EXTERNAL TABLE {} STORED AS parquet LOCATION '{}/*.parquet'".format(table_name, file)
             print(create_view_sql)
-            c.sql(create_view_sql)
+            ctx.sql(create_view_sql)
         end = time.time()
         print("Register Tables took {} seconds".format(end-start))
         results.write("setup,{}\n".format((end-start)*1000))
@@ -33,8 +37,8 @@ def bench(data_path, query_path, num_queries):
                 # print(sql)
                 try:
                     start = time.time()
-                    df = c.sql(sql)
-                    x = df.collect()
+                    df = ctx.sql(sql)
+                    result_set = df.collect()
                     end = time.time()
                     time_millis = (end - start) * 1000
                     print("q{},{}".format(query, time_millis))

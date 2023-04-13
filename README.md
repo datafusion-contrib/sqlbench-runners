@@ -24,8 +24,8 @@ by specifying `--cpus` and `-m`.
 
 ```bash
 docker run \
-  --cpus 1 \
-  -m 32GB \
+  --cpus 24 \
+  -m 64GB \
   -v /mnt/bigdata/tpch/sf10-parquet/:/data \
   -v `pwd`/../sqlbench-h/queries:/queries \
   -it sqlbench/duckdb /data /queries/sf=10 22
