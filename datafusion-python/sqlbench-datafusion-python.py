@@ -9,7 +9,13 @@ def bench(data_path, query_path, num_queries):
     with open("results.csv", 'w') as results:
         # register tables
         start = time.time()
-        c = SessionContext()
+
+        runtime = RuntimeConfig() #.with_disk_manager_os().with_fair_spill_pool(10000000)
+        config = {
+            'datafusion.execution.parquet.pushdown_filters': 'true'
+        }
+        ctx = SessionContext(SessionConfig(config), runtime)
+
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
@@ -24,7 +30,7 @@ def bench(data_path, query_path, num_queries):
         for query in range(1, num_queries):
             with open("{}/q{}.sql".format(query_path, query)) as f:
                 sql = f.read()
-                print(sql)
+                # print(sql)
                 try:
                     start = time.time()
                     df = c.sql(sql)

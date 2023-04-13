@@ -10,3 +10,24 @@ All SQLBench benchmarks following the same format:
   SQL statements.
 
 For a list of available SQLBench benchmarks, see https://sqlbenchmarks.io/benchmarks/
+
+## Creating Docker Images
+
+```bash
+./build-docker-images.sh
+```
+
+## Running Benchmarks
+
+All benchmarks are run in a constrained containerized environment for fairness. The environment is constrained 
+by specifying `--cpus` and `-m`.
+
+```bash
+docker run \
+  --cpus 1 \
+  -m 32GB \
+  -v /mnt/bigdata/tpch/sf10-parquet/:/data \
+  -v `pwd`/../sqlbench-h/queries:/queries \
+  -it sqlbench/duckdb /data /queries/sf=10 22
+```
+
