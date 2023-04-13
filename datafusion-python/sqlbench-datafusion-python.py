@@ -27,24 +27,35 @@ def bench(data_path, query_path, num_queries):
             print(create_view_sql)
             ctx.sql(create_view_sql)
         end = time.time()
-        print("Register Tables took {} seconds".format(end-start))
-        results.write("setup,{}\n".format((end-start)*1000))
+        print("setup,{}".format(round((end-start)*1000,1)))
+        results.write("setup,{}\n".format(round((end-start)*1000,1)))
 
         # run queries
+        total_time_millis = 0
         for query in range(1, num_queries):
             with open("{}/q{}.sql".format(query_path, query)) as f:
-                sql = f.read()
-                # print(sql)
+                text = f.read()
+                tmp = text.split(';')
+                queries = []
+                for str in tmp:
+                    if len(str.strip()) > 0:
+                        queries.append(str.strip())
+
                 try:
                     start = time.time()
-                    df = ctx.sql(sql)
-                    result_set = df.collect()
+                    for sql in queries:
+                        # print(sql)
+                        df = ctx.sql(sql)
+                        result_set = df.collect()
                     end = time.time()
                     time_millis = (end - start) * 1000
-                    print("q{},{}".format(query, time_millis))
-                    results.write("q{},{}\n".format(query, time_millis))
+                    total_time_millis += time_millis
+                    print("q{},{}".format(query, round(time_millis,1)))
+                    results.write("q{},{}\n".format(query, round(time_millis,1)))
                 except Exception as e:
                     print("query", query, "failed", e)
+        print("total,{}".format(round(total_time_millis,1)))
+        results.write("total,{}\n".format(round(total_time_millis,1)))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
