@@ -12,6 +12,7 @@ use std::io::{BufReader, BufRead, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use datafusion::physical_plan::displayable;
 use datafusion::scalar::ScalarValue;
 use structopt::StructOpt;
 use tokio::time::Instant;
@@ -106,7 +107,11 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let mut config = SessionConfig::new().with_target_partitions(opt.concurrency as usize);
+    let mut config = SessionConfig::new()
+        .with_target_partitions(opt.concurrency as usize)
+        .with_repartition_file_scans(true)
+        .set_bool("datafusion.optimizer.enable_round_robin_repartition", true)
+        .set_bool("datafusion.execution.coalesce_batches", false);
 
     if let Some(config_path) = &opt.config_path {
         let file = File::open(config_path)?;
@@ -254,14 +259,25 @@ pub async fn execute_query(
             let batches = df.clone().collect().await?;
             let duration = start.elapsed();
             total_duration_millis += duration.as_millis();
+
+            let row_count: usize = batches.iter().map(|b| b.num_rows()).sum();
+
             println!(
-                "Query {}{} executed in: {:?}",
-                query_no, file_suffix, duration
+                "Query {query_no}{file_suffix} executed in: {duration:?} and returned {row_count} rows",
             );
 
             if iteration == 0 {
-                let plan = df.into_optimized_plan()?;
+                let plan = df.clone().into_optimized_plan()?;
                 let formatted_query_plan = format!("{}", plan.display_indent());
+                if debug {
+                    println!("{}", formatted_query_plan);
+                }
+
+                let exec = df.create_physical_plan().await?;
+                if debug {
+                    println!("{}", displayable(exec.as_ref()).indent());
+                }
+
                 let filename = format!(
                     "{}/q{}{}_logical_plan.txt",
                     output_path, query_no, file_suffix

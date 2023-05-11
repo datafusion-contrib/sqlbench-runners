@@ -23,11 +23,11 @@ All benchmarks are run in a constrained containerized environment for fairness. 
 by specifying `--cpus` and `-m`.
 
 ```bash
-docker run \
-  --cpus 24 \
+``docker run \
+  --cpus 16 \
   -m 64GB \
   -v /mnt/bigdata/tpch/sf10-parquet/:/data \
-  -v `pwd`/../sqlbench-h/queries:/queries \
-  -it sqlbench/duckdb /data /queries/sf=10 22
+  -v `pwd`/../sqlbench-h/queries/:/queries \
+  -it sqlbench/datafusion-python /data /queries/sf=10 22``
 ```
 

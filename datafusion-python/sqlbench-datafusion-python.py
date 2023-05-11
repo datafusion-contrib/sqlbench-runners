@@ -11,14 +11,21 @@ def bench(data_path, query_path, num_queries):
         start = time.time()
 
         # test with explicit configs
-        # runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
-        # config = {
-        #     'datafusion.execution.parquet.pushdown_filters': 'true'
-        # }
-        # ctx = SessionContext(SessionConfig(config), runtime)
+        runtime = RuntimeConfig()\
+            .with_disk_manager_os()\
+            .with_greedy_memory_pool(64*1024*1024*1024)
+        config = {
+            'datafusion.execution.batch_size': '32768',
+            'datafusion.execution.parquet.pushdown_filters': 'true',
+            'datafusion.execution.parquet.reorder_filters': 'true',
+            'datafusion.execution.parquet.enable_page_index': 'true',
+            'datafusion.optimizer.filter_null_join_keys': 'false'
+        }
+        ctx = SessionContext(SessionConfig(config), runtime)
+        print(ctx)
 
         # test with default session
-        ctx = SessionContext()
+        #ctx = SessionContext()
 
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
@@ -32,7 +39,7 @@ def bench(data_path, query_path, num_queries):
 
         # run queries
         total_time_millis = 0
-        for query in range(1, num_queries):
+        for query in range(1, num_queries+1):
             with open("{}/q{}.sql".format(query_path, query)) as f:
                 text = f.read()
                 tmp = text.split(';')
