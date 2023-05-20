@@ -1,0 +1,21 @@
+[package]
+name = "sqlbench-datafusion"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.62"
+publish = false
+
+[dependencies]
+datafusion = "24.0.0"
+#datafusion = { git = "https://github.com/alamb/arrow-datafusion", branch = "alamb/more_parallelism" }
+#datafusion = { path = "../../../apache/arrow-datafusion/datafusion/core" }
+qpml = { version = "0.13.0", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.91"
+serde_yaml = "0.9.16"
+structopt = "0.3.26"
+tokio = { version = "^1.0", features = ["rt-multi-thread"] }
+
+[features]
+default = [ ]
+qpml = ["dep:qpml"]
