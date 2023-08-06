@@ -132,7 +132,7 @@ pub async fn main() -> Result<()> {
         }
     }
 
-    for entry in config.config_options().entries() {
+    for entry in config.options().entries() {
         if let Some(ref value) = entry.value {
             results.config.insert(entry.key, value.to_string());
         }
@@ -275,7 +275,7 @@ pub async fn execute_query(
 
                 let exec = df.create_physical_plan().await?;
                 if debug {
-                    println!("{}", displayable(exec.as_ref()).indent());
+                    println!("{}", displayable(exec.as_ref()).indent(false));
                 }
 
                 let filename = format!(

@@ -6,9 +6,7 @@ rust-version = "1.62"
 publish = false
 
 [dependencies]
-datafusion = "24.0.0"
-#datafusion = { git = "https://github.com/alamb/arrow-datafusion", branch = "alamb/more_parallelism" }
-#datafusion = { path = "../../../apache/arrow-datafusion/datafusion/core" }
+datafusion = "28.0.0"
 qpml = { version = "0.13.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.91"

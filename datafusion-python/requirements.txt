@@ -1,1 +1,1 @@
-datafusion==23.0.0
+datafusion==28.0.0
