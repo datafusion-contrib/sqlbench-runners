@@ -1,4 +1,6 @@
-FROM rust
+FROM rust:1.73.0
+
+RUN apt-get update && apt-get upgrade
 
 RUN mkdir -p /code/src
 
@@ -8,7 +10,6 @@ ADD datafusion/src/* /code/src/
 
 WORKDIR /code
 
-RUN find .
 RUN cargo build --release
 
 ENTRYPOINT ["/entrypoint.sh"]
