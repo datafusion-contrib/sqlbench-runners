@@ -12,5 +12,5 @@ WORKDIR /code
 
 RUN cargo build --release
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/code/entrypoint.sh"]
 

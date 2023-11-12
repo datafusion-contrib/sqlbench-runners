@@ -18,17 +18,21 @@ to build a Docker image for DuckDB.
 ./build-docker-duckdb.sh
 ```
 
+It is assumed that the 
+
 ## Running Benchmarks
 
 All benchmarks are run in a constrained containerized environment for fairness. The environment is constrained 
 by specifying `--cpus` and `-m`.
+
+Here is an example of running the DataFusion Python benchmarks. See the README for each engine for specific instructions.
 
 ```bash
 docker run \
   --cpus 16 \
   -m 64GB \
   -v /mnt/bigdata/tpch/sf10-parquet/:/data \
-  -v `pwd`/../sqlbench-h/queries/:/queries \
-  -it sqlbench/datafusion-python /data /queries/sf=10
+  -v `pwd`/../sqlbench-h/queries/sf\=10/:/queries \
+  -it sqlbench/datafusion-python /data /queries 22
 ```
 
