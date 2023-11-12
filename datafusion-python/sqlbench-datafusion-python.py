@@ -53,6 +53,9 @@ def bench(data_path, query_path, num_queries):
                     for sql in queries:
                         # print(sql)
                         df = ctx.sql(sql)
+
+                        print(df.optimized_logical_plan())
+
                         result_set = df.collect()
                     end = time.time()
                     time_millis = (end - start) * 1000
