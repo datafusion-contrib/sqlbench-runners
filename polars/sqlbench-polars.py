@@ -1,5 +1,5 @@
 import argparse
-from datafusion import SessionContext, RuntimeConfig, SessionConfig
+import polars as pl
 import os
 import time
 import glob
@@ -10,29 +10,14 @@ def bench(data_path, query_path, num_queries):
         # register tables
         start = time.time()
 
-        # test with explicit configs
-        runtime = RuntimeConfig()\
-            .with_disk_manager_os()\
-            .with_greedy_memory_pool(64*1024*1024*1024)
-        config = {
-            'datafusion.execution.batch_size': '32768',
-            'datafusion.execution.parquet.pushdown_filters': 'true',
-            'datafusion.execution.parquet.reorder_filters': 'true',
-            'datafusion.execution.parquet.enable_page_index': 'true',
-            'datafusion.optimizer.filter_null_join_keys': 'false'
-        }
-        ctx = SessionContext(SessionConfig(config), runtime)
-        print(ctx)
-
-        # test with default session
-        #ctx = SessionContext()
+        ctx = pl.SQLContext()
 
         for file in glob.glob("{}/*.parquet".format(data_path)):
             filename = os.path.basename(file)
             table_name = filename[0:len(filename)-8]
-            create_view_sql = "CREATE EXTERNAL TABLE {} STORED AS parquet LOCATION '{}/*.parquet'".format(table_name, file)
-            print(create_view_sql)
-            ctx.sql(create_view_sql)
+            # TODO this currently assumes that each table is a directory containing multiple parquet files
+            df = pl.scan_parquet("{}/*.parquet".format(file))
+            ctx.register(table_name, df)
         end = time.time()
         print("setup,{}".format(round((end-start)*1000,1)))
         results.write("setup,{}\n".format(round((end-start)*1000,1)))
@@ -52,11 +37,10 @@ def bench(data_path, query_path, num_queries):
                     start = time.time()
                     for sql in queries:
                         # print(sql)
-                        df = ctx.sql(sql)
-
-                        print(df.optimized_logical_plan())
-
+                        df = ctx.execute(sql)
                         result_set = df.collect()
+                        print(len(result_set))
+
                     end = time.time()
                     time_millis = (end - start) * 1000
                     total_time_millis += time_millis
