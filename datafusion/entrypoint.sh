@@ -1,2 +1,2 @@
 #!/bin/bash
-./target/release/sqlbench-datafusion "@$"
+./target/release/sqlbench-datafusion "$@"

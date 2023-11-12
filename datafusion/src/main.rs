@@ -1,6 +1,9 @@
 use datafusion::common::Result;
+use datafusion::dataframe::DataFrameWriteOptions;
 use datafusion::datasource::MemTable;
+use datafusion::physical_plan::displayable;
 use datafusion::prelude::{ParquetReadOptions, SessionConfig, SessionContext};
+use datafusion::scalar::ScalarValue;
 use datafusion::DATAFUSION_VERSION;
 #[cfg(feature = "qpml")]
 use qpml::from_datafusion;
@@ -8,12 +11,10 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use std::io::{BufReader, BufRead, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use datafusion::physical_plan::displayable;
-use datafusion::scalar::ScalarValue;
 use structopt::StructOpt;
 use tokio::time::Instant;
 
@@ -140,7 +141,7 @@ pub async fn main() -> Result<()> {
 
     // register all tables in data directory
     let start = Instant::now();
-    let ctx = SessionContext::with_config(config);
+    let ctx = SessionContext::new_with_config(config);
     for file in fs::read_dir(&opt.data_path)? {
         let file = file?;
         let file_path = file.path();
@@ -174,10 +175,9 @@ pub async fn main() -> Result<()> {
         _ => {
             let num_queries = opt.num_queries.unwrap();
             for query in 1..=num_queries {
-
                 if opt.exclude.contains(&query) {
                     println!("Skipping query {}", query);
-                    continue
+                    continue;
                 }
 
                 let result = execute_query(
@@ -305,7 +305,8 @@ pub async fn execute_query(
                     let filename = format!("{}/q{}{}.csv", output_path, query_no, file_suffix);
                     let t = MemTable::try_new(batches[0].schema(), vec![batches])?;
                     let df = ctx.read_table(Arc::new(t))?;
-                    df.write_csv(&filename).await?;
+                    df.write_csv(&filename, DataFrameWriteOptions::default(), None)
+                        .await?;
                 }
             }
         }
