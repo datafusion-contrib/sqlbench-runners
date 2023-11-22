@@ -5,7 +5,7 @@
 - Download Apache Maven from https://maven.apache.org/download.cgi
 - Download Apache Spark 3.3.0 from https://spark.apache.org/downloads.html
 
-Untar these downloads and set `MAVEN_HOME` and `SPARK_HOME` environment variables to point to the 
+Untar these downloads and set `MAVEN_HOME` and `SPARK_HOME` environment variables to point to the
 install location.
 
 ## Build the benchmark JAR file
