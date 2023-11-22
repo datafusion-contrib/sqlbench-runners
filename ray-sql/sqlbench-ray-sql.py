@@ -9,7 +9,7 @@ import glob
 def bench(data_path, query_path, output_path, num_queries, iterations):
 
     # start a cluster
-    ray.init(resources={"worker": 1})
+    ray.init(resources={"worker": 24})
 
     # create context
     ctx = RaySqlContext(24, use_ray_shuffle=True)
