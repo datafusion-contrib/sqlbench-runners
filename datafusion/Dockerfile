@@ -4,9 +4,9 @@ RUN apt-get update && apt-get upgrade
 
 RUN mkdir -p /code/src
 
-ADD datafusion/entrypoint.sh /code/
-ADD datafusion/Cargo.* /code/
-ADD datafusion/src/* /code/src/
+ADD entrypoint.sh /code/
+ADD Cargo.* /code/
+ADD src/* /code/src/
 
 WORKDIR /code
 

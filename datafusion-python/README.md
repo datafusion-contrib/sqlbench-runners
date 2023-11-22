@@ -14,7 +14,7 @@ From the root of this project, run the following command to build the Docker ima
 ./build-docker-datafusion-python.sh
 ```
 
-Then run the benchmarks with this command. Note that you will need to customize the paths to reflect the location 
+Then run the benchmarks with this command. Note that you will need to customize the paths to reflect the location
 of the query and data files in your environment.
 
 ```bash

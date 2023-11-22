@@ -2,7 +2,7 @@
 
 This is currently experimental because Polars does not yet have full SQL support.
 
-All queries currently fail.
+All queries currently fail for SQLBench-H as of Polars 0.19.13.
 
 ```
 q1,FAILED: SQL expression TypedString { data_type: Date, value: "1998-12-01" } is not yet supported
