@@ -11,14 +11,13 @@ All SQLBench benchmarks following the same format:
 
 ## Creating Docker Images
 
-There is one script per query engine for building the Docker image. For example, the following script can be used
+There is one script per query engine for building the Docker image. For example, the following commands can be used
 to build a Docker image for DuckDB.
 
 ```bash
-./build-docker-duckdb.sh
+cd duckdb
+./build-docker.sh
 ```
-
-It is assumed that the 
 
 ## Running Benchmarks
 
