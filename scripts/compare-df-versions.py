@@ -12,13 +12,13 @@ def clear_page_cache():
 
 def bench_datafusion(version, cpus, mem, data_path, query_path):
     return ("docker run --cpus {} -m {} -v {}:/data -v {}:/queries -it sqlbench/datafusion:{} --concurrency {} --data-path /data --query-path /queries --iterations 1 --output . --num-queries 22"
-        .format(version, cpus, mem, data_path, query_path, cpus))
+        .format(cpus, mem, data_path, query_path, version, cpus))
 
 if __name__ == "__main__":
     with open("results.csv", "w") as results:
         results.write("version,scale,cores,duration\n")
         results.flush()
-        for version in [26, 27, 28, 30, 31, 32, 33]:
+        for version in [25, 26, 27, 28, 30, 31, 32, 33]:
             for scale in [10]:
                 data_path = "/mnt/bigdata/tpch/sf{}-parquet/".format(scale)
                 query_path = "~/git/sql-benchmarks/sqlbench-h/queries/sf={}".format(scale)
