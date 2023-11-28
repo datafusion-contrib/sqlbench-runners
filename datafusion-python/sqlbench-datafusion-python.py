@@ -14,13 +14,7 @@ def bench(data_path, query_path, num_queries):
         runtime = RuntimeConfig()\
             .with_disk_manager_os()\
             .with_greedy_memory_pool(64*1024*1024*1024)
-        config = {
-            'datafusion.execution.batch_size': '32768',
-            'datafusion.execution.parquet.pushdown_filters': 'true',
-            'datafusion.execution.parquet.reorder_filters': 'true',
-            'datafusion.execution.parquet.enable_page_index': 'true',
-            'datafusion.optimizer.filter_null_join_keys': 'false'
-        }
+        config = {}
         ctx = SessionContext(SessionConfig(config), runtime)
         print(ctx)
 
