@@ -108,11 +108,7 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let mut config = SessionConfig::new()
-        .with_target_partitions(opt.concurrency as usize)
-        .with_repartition_file_scans(true)
-        .set_bool("datafusion.optimizer.enable_round_robin_repartition", true)
-        .set_bool("datafusion.execution.coalesce_batches", false);
+    let mut config = SessionConfig::new().with_target_partitions(opt.concurrency as usize);
 
     if let Some(config_path) = &opt.config_path {
         let file = File::open(config_path)?;
