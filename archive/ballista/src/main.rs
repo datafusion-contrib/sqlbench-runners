@@ -1,10 +1,10 @@
-use datafusion::prelude::ParquetReadOptions;
 use ballista::prelude::*;
+use datafusion::prelude::ParquetReadOptions;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use std::io::{BufReader, BufRead, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -96,7 +96,10 @@ pub async fn main() -> Result<()> {
     let output_path = format!("{}", opt.output.display());
 
     let mut config = BallistaConfig::builder()
-        .set(BALLISTA_DEFAULT_SHUFFLE_PARTITIONS, &format!("{}", opt.concurrency))
+        .set(
+            BALLISTA_DEFAULT_SHUFFLE_PARTITIONS,
+            &format!("{}", opt.concurrency),
+        )
         .build()?;
 
     // if let Some(config_path) = &opt.config_path {
@@ -160,10 +163,9 @@ pub async fn main() -> Result<()> {
         _ => {
             let num_queries = opt.num_queries.unwrap();
             for query in 1..=num_queries {
-
                 if opt.exclude.contains(&query) {
                     println!("Skipping query {}", query);
-                    continue
+                    continue;
                 }
 
                 let result = execute_query(
