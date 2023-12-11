@@ -370,6 +370,8 @@ dependencies = [
  "arrow-data 49.0.0",
  "arrow-schema 49.0.0",
  "flatbuffers 23.5.26",
+ "lz4_flex",
+ "zstd 0.13.0",
 ]
 
 [[package]]
@@ -671,7 +673,7 @@ dependencies = [
 [[package]]
 name = "ballista"
 version = "0.11.0"
-source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#b3cb1b27cb8d180a04f72f9f05ee76e4af1ddfc9"
+source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#6d17c70fdff0849b6c5a5b2acbe8a023173b3442"
 dependencies = [
  "ballista-core",
  "datafusion 33.0.0",
@@ -687,7 +689,7 @@ dependencies = [
 [[package]]
 name = "ballista-cache"
 version = "0.11.0"
-source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#b3cb1b27cb8d180a04f72f9f05ee76e4af1ddfc9"
+source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#6d17c70fdff0849b6c5a5b2acbe8a023173b3442"
 dependencies = [
  "async-trait",
  "futures",
@@ -701,7 +703,7 @@ dependencies = [
 [[package]]
 name = "ballista-core"
 version = "0.11.0"
-source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#b3cb1b27cb8d180a04f72f9f05ee76e4af1ddfc9"
+source = "git+https://github.com/andygrove/arrow-ballista?branch=df-34#6d17c70fdff0849b6c5a5b2acbe8a023173b3442"
 dependencies = [
  "ahash",
  "arrow-flight",
@@ -2929,6 +2931,7 @@ dependencies = [
 name = "sqlbench-ballista"
 version = "0.1.0"
 dependencies = [
+ "arrow 49.0.0",
  "ballista",
  "datafusion 33.0.0",
  "qpml",
