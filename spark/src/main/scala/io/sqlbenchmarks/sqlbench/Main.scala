@@ -96,7 +96,6 @@ object Main {
 
       val optimizedLogicalPlan = resultDf.queryExecution.optimizedPlan
       writeFile(prefix, "logical_plan.txt", optimizedLogicalPlan.toString())
-      writeFile(prefix, "logical_plan.qpml", Qpml.fromLogicalPlan(optimizedLogicalPlan))
       val physicalPlan = resultDf.queryExecution.executedPlan
       writeFile(prefix, "physical_plan.txt", physicalPlan.toString())
 
