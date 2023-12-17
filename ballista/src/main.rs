@@ -1,10 +1,12 @@
-use datafusion::prelude::ParquetReadOptions;
 use ballista::prelude::*;
+use datafusion::dataframe::DataFrameWriteOptions;
+use datafusion::datasource::{MemTable, TableProvider};
+use datafusion::prelude::ParquetReadOptions;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
-use std::io::{BufReader, BufRead, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -53,10 +55,6 @@ struct Opt {
     /// Iterations (number of times to run each query)
     #[structopt(short, long)]
     iterations: u8,
-
-    /// Optional GitHub SHA of DataFusion version for inclusion in result yaml file
-    #[structopt(short, long)]
-    rev: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Default)]
@@ -95,34 +93,35 @@ pub async fn main() -> Result<()> {
     let query_path = format!("{}", opt.query_path.display());
     let output_path = format!("{}", opt.output.display());
 
-    let mut config = BallistaConfig::builder()
-        .set(BALLISTA_DEFAULT_SHUFFLE_PARTITIONS, &format!("{}", opt.concurrency))
-        .build()?;
+    let mut config = BallistaConfig::builder().set(
+        BALLISTA_DEFAULT_SHUFFLE_PARTITIONS,
+        &format!("{}", opt.concurrency),
+    );
 
-    // if let Some(config_path) = &opt.config_path {
-    //     let file = File::open(config_path)?;
-    //     let reader = BufReader::new(file);
-    //     let lines = reader.lines();
-    //     for line in lines {
-    //         let line = line?;
-    //         if line.starts_with("#") {
-    //             continue;
-    //         }
-    //         let parts = line.split('=');
-    //         let parts = parts.collect::<Vec<&str>>();
-    //         if parts.len() == 2 {
-    //             config = config.set(parts[0], ScalarValue::Utf8(Some(parts[1].to_string())));
-    //         } else {
-    //             println!("Warning! Skipping config entry {}", line);
-    //         }
-    //     }
-    // }
+    if let Some(config_path) = &opt.config_path {
+        let file = File::open(config_path)?;
+        let reader = BufReader::new(file);
+        let lines = reader.lines();
+        for line in lines {
+            let line = line?;
+            if line.starts_with("#") {
+                continue;
+            }
+            let parts = line.split('=');
+            let parts = parts.collect::<Vec<&str>>();
+            if parts.len() == 2 {
+                config = config.set(parts[0], parts[1]);
+            } else {
+                println!("Warning! Skipping config entry {}", line);
+            }
+        }
+    }
 
-    // for entry in config.config_options().entries() {
-    //     if let Some(ref value) = entry.value {
-    //         results.config.insert(entry.key, value.to_string());
-    //     }
-    // }
+    let config = config.build()?;
+
+    for (key, value) in config.settings() {
+        results.config.insert(key.to_string(), value.to_string());
+    }
 
     // register all tables in data directory
     let start = Instant::now();
@@ -160,10 +159,9 @@ pub async fn main() -> Result<()> {
         _ => {
             let num_queries = opt.num_queries.unwrap();
             for query in 1..=num_queries {
-
                 if opt.exclude.contains(&query) {
                     println!("Skipping query {}", query);
-                    continue
+                    continue;
                 }
 
                 let result = execute_query(
@@ -260,27 +258,20 @@ pub async fn execute_query(
                 let mut file = File::create(&filename)?;
                 write!(file, "{}", formatted_query_plan)?;
 
-                // // write QPML
-                // #[cfg(feature = "qpml")]
-                // {
-                //     let qpml = from_datafusion(&plan);
-                //     let filename = format!(
-                //         "{}/q{}{}_logical_plan.qpml",
-                //         output_path, query_no, file_suffix
-                //     );
-                //     let file = File::create(&filename)?;
-                //     let mut file = BufWriter::new(file);
-                //     serde_yaml::to_writer(&mut file, &qpml).unwrap();
-                // }
-
                 // write results to disk
+
+                // TODO broken due to https://github.com/apache/arrow-ballista/issues/894
                 // if batches.is_empty() {
                 //     println!("Empty result set returned");
                 // } else {
                 //     let filename = format!("{}/q{}{}.csv", output_path, query_no, file_suffix);
-                //     let t = MemTable::try_new(batches[0].schema(), vec![batches])?;
-                //     let df = ctx.read_table(Arc::new(t))?;
-                //     df.write_csv(&filename).await?;
+                //     let t: Arc<dyn TableProvider> =
+                //         Arc::new(MemTable::try_new(batches[0].schema(), vec![batches])?);
+                //     let table_name = format!("q{query_no}");
+                //     ctx.register_table(&table_name, t)?;
+                //     let df = ctx.sql(&format!("SELECT * FROM {table_name}")).await?;
+                //     df.write_csv(&filename, DataFrameWriteOptions::default(), None)
+                //         .await?;
                 // }
             }
         }
