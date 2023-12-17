@@ -7,15 +7,10 @@ publish = false
 
 [dependencies]
 arrow = { version = "49.0.0", features = [ "ipc_compression" ] }
-ballista = { git = "https://github.com/andygrove/arrow-ballista", branch="df-34" }
-datafusion = { git = "https://github.com/apache/arrow-datafusion", rev = "d091b55be6a4ce552023ef162b5d081136d3ff6d" }
-qpml = { version = "0.11.0", optional = true }
+ballista = { git = "https://github.com/andygrove/arrow-ballista", rev = "934b32fd7b485bdd48d74a7375ccf7ba03c188b5" }
+datafusion = { git = "https://github.com/apache/arrow-datafusion", rev = "34.0.0-rc1" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.91"
 serde_yaml = "0.9.16"
 structopt = "0.3.26"
 tokio = { version = "^1.0", features = ["rt-multi-thread"] }
-
-[features]
-default = [ ]
-qpml = ["dep:qpml"]
