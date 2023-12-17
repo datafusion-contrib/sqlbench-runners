@@ -259,18 +259,20 @@ pub async fn execute_query(
                 write!(file, "{}", formatted_query_plan)?;
 
                 // write results to disk
-                if batches.is_empty() {
-                    println!("Empty result set returned");
-                } else {
-                    let filename = format!("{}/q{}{}.csv", output_path, query_no, file_suffix);
-                    let t: Arc<dyn TableProvider> =
-                        Arc::new(MemTable::try_new(batches[0].schema(), vec![batches])?);
-                    let table_name = format!("q{query_no}");
-                    ctx.register_table(&table_name, t)?;
-                    let df = ctx.sql(&format!("SELECT * FROM {table_name}")).await?;
-                    df.write_csv(&filename, DataFrameWriteOptions::default(), None)
-                        .await?;
-                }
+
+                // TODO broken due to https://github.com/apache/arrow-ballista/issues/894
+                // if batches.is_empty() {
+                //     println!("Empty result set returned");
+                // } else {
+                //     let filename = format!("{}/q{}{}.csv", output_path, query_no, file_suffix);
+                //     let t: Arc<dyn TableProvider> =
+                //         Arc::new(MemTable::try_new(batches[0].schema(), vec![batches])?);
+                //     let table_name = format!("q{query_no}");
+                //     ctx.register_table(&table_name, t)?;
+                //     let df = ctx.sql(&format!("SELECT * FROM {table_name}")).await?;
+                //     df.write_csv(&filename, DataFrameWriteOptions::default(), None)
+                //         .await?;
+                // }
             }
         }
         durations.push(total_duration_millis);
